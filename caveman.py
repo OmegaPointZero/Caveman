@@ -257,6 +257,11 @@ def setPermission(path, ftype, secName, sections):
 def main():
     global args
     global results
+    print_banner = results.print_banner
+
+    if print_banner == True:
+        banner()
+
     path = results.file_path
     if path == '':
         path = raw_input("Input absolute path to the file to look for code caves in\n> ")
@@ -268,7 +273,6 @@ def main():
     sA = results.allSec
     ccByte = results.byte
     caveLen = results.length
-    print_banner = results.print_banner
     p = results.permissions
 
     if p == True:
@@ -276,9 +280,6 @@ def main():
 
     enumerating = False
     injecting = False
-
-    if print_banner == True:
-        banner()
 
     e = ['-d', '--file-headers', '-s', '--section-headers', '-S', '--search', '-X', '-A', '-l', '--length', '-b', '--byte']
     for flag in e:

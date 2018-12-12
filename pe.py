@@ -83,7 +83,6 @@ def parsePESectionsHeaderTable(path, offset, endian, entNum, entSize, sh):
 
     sections = []
 
-    # Fix this shit so it iterates over all of the sections and adds to [] 
     f = io.open(path, 'rb') 
     for y in range(0,int(entNum)): 
         # sf = index * entry size 
