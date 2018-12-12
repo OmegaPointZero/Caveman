@@ -323,4 +323,3 @@ def parseELFHeader(elfFile, fh):
     }
 
     return obj
-
