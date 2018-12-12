@@ -1,5 +1,5 @@
 # Caveman
-An ELF/PE binary file backdooring toolkit, that finds codecaves, injects shellcode and modifies section permissions
+An ELF/PE binary file backdooring toolkit, that finds codecaves, injects shellcode and modifies section permissions.
 
 # Usage
 
@@ -26,7 +26,7 @@ To tell Caveman that you're looking to enumerate code cave information from the 
   `-b, --byte BYTE       Byte to be searching for.`
   
 
-  (UNDER CONSTRUCTION) To tell Caveman to inject shellcode, the following options need to be used:
+  To tell Caveman to inject shellcode, the following options need to be used. BE CAREFUL! This will overwrite WHATEVER OFFSET YOU TELL IT TO.
 
 
 `  -t, --target-offset TARGET
@@ -36,9 +36,6 @@ To tell Caveman that you're looking to enumerate code cave information from the 
   
 `  -J INJECTION_STRING   A string of raw bytes to inject supplied like \xef\xeb`
   
-`  -o, --output-file OUTFILE
-                        Output file containing backdoor`
-
   Caveman currently supports the following optional flags:
 `  
 -B, --banner          Print banner

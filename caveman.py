@@ -335,22 +335,35 @@ def main():
     # We have caves, check injection options
     if injecting == True:
         #Make sure there's a -J or -j
+        binShell = None
         if results.injection_file:
-            binShell = io.open(results.injection_file,'rb').read()
+            binS = io.open(results.injection_file,'rb')
+            binS.read()
+            binShell = bytearray.fromhex(binS)
         elif results.injection_string:
-            binShell = results.injection_string
-        if not binShell:
+            ijstr = results.injection_string
+            ijstr = ijstr.lower()
+            binShell = bytearray.fromhex(ijstr)
+        if binShell == None:
             print "Error: Need -j or -J flag to supply shellcode to inject"
+            sys.exit(0)
 
-        target_offset = int(results.target,16)
-        if not target_offset:
+        tgt = results.target
+
+        if tgt == None:
             print "Error: Need -t flag to point to target offset (in hex)"
+            sys.exit(0)
+        else: 
+            target_offset = int(tgt,16)
+
         outFile = results.outfile
         if not outFile:
             outFile = "Caveman_output"
 
+        print "Writing shellcode (%s bytes) to offset 0x%s" % (len(binShell), tgt)
         bd = io.open(path,'r+b')
         bd.seek(target_offset)
         bd.write(binShell)
         bd.close()
+        print "Shellcode written!"
 main()
