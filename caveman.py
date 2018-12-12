@@ -31,7 +31,7 @@ parser.add_argument('-b, --byte', action='store', default='0x00', dest='byte', h
 parser.add_argument('-t, --target-offset', action='store', dest='target', help='Target offset to inject shellcode')
 parser.add_argument('-j', action='store', dest='injection_file', help='A file of raw bytes to inject')
 parser.add_argument('-J', action='store', dest='injection_string', help='A string of raw bytes to inject supplied like \\xef\\xeb')
-parser.add_argument('-o, --output-file', action='store', default='output', dest='outfile', help='Output file containing backdoor')
+parser.add_argument('-o, --output-file', action='store', dest='outfile', help='Output file containing backdoor')
 
 parser.add_argument('-B, --banner', action='store_true', dest='print_banner', help='Print banner')
 
@@ -270,7 +270,7 @@ def main():
 
     i = ['-t', '--target-offset', '-j', '-J', '-o', '--output-file']
     for flag in i:
-        if any(flag) in args:
+        if flag in args:
             injecting = True
 
     if (len(args)==1 or (len(args)==3 and path != '')):
@@ -328,11 +328,29 @@ def main():
                     for e in c:
                         crawled.append(e)
     
-    print "Done crawling for caves: Found %s" % len(crawled)
+    if enumerating == True:
+        print bcolors.OKBLUE + "Done crawling for caves: Found %s" % len(crawled)
     if (len(crawled) > 0) and (enumerating == True):
         print_caves(crawled)
+    # We have caves, check injection options
+    if injecting == True:
+        #Make sure there's a -J or -j
+        if results.injection_file:
+            binShell = io.open(results.injection_file,'rb').read()
+        elif results.injection_string:
+            binShell = results.injection_string
+        if not binShell:
+            print "Error: Need -j or -J flag to supply shellcode to inject"
 
+        target_offset = int(results.target,16)
+        if not target_offset:
+            print "Error: Need -t flag to point to target offset (in hex)"
+        outFile = results.outfile
+        if not outFile:
+            outFile = "Caveman_output"
 
-
-
+        bd = io.open(path,'r+b')
+        bd.seek(target_offset)
+        bd.write(binShell)
+        bd.close()
 main()
