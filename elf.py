@@ -161,7 +161,8 @@ def parseSectionHeaders(elfFile, offset, arch, endian, entNum, entSize, nameInde
         'sh_link' : sh_link,
         'sh_info' : sh_info,
         'sh_addralign' : sh_addralign,
-        'sh_entsize' : sh_entsize
+        'sh_entsize' : sh_entsize,
+        'soffset' : offset
     }
 
     return obj
