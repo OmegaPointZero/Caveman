@@ -1,2 +1,35 @@
 # Caveman
 An ELF/PE binary file backdooring toolkit, that finds codecaves, injects shellcode and modifies section permissions
+
+# Usage
+
+`python caveman.py` will prompt the user for the absolute path to the binary being analyzed. The default behavior is to set the -A, -d and -s flags on the binary.
+
+To tell Caveman that you're looking to enumerate code cave information from the binary, or only want specific information about it, these are the following flags:
+
+`
+  -f, --file FILE_PATH  Location of file to search for code cave in (absolute
+                        path)
+  -d, --file-headers    Show File Headers
+  -s, --section-headers
+                        Show enumerated section headers
+  -S, --search SEARCH   Section to search for code cave inside of
+  -X                    Search all executable sections
+  -A                    Search all sections
+  -l, --length LENGTH   Number of bytes that constitutes a cave (default 64)
+  -b, --byte BYTE       Byte to be searching for.
+  `
+  (UNDER CONSTRUCTION) To tell Caveman to inject shellcode, the following options need to be used:
+
+
+`  -t, --target-offset TARGET
+                        Target offset to inject shellcode
+  -j INJECTION_FILE     A file of raw bytes to inject
+  -J INJECTION_STRING   A string of raw bytes to inject supplied like \xef\xeb
+  -o, --output-file OUTFILE
+                        Output file containing backdoor
+  `
+  Caveman currently supports the following optional flags:
+`  
+-B, --banner          Print banner
+`
