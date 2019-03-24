@@ -1,0 +1,50 @@
+test both formats with the flags:
+
+    -f -d -s -S -X -A -l -b 
+    
+test the injection methods:
+
+    -t -j -J
+
+usage: caveman.py [-h] [-f, --file FILE_PATH] [-d, --file-headers]
+                  [-s, --section-headers] [-S, --search SEARCH] [-X] [-A]
+                  [-l, --length LENGTH] [-b, --byte BYTE]
+                  [-t, --target-offset TARGET] [-j INJECTION_FILE]
+                  [-J INJECTION_STRING] [-P] [-B, --banner]
+
+Find code caves in executables, inject your own code.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f, --file FILE_PATH  Location of file to search for code cave in (absolute
+                        path)
+  -d, --file-headers    Show File Headers
+  -s, --section-headers
+                        Show enumerated section headers
+  -S, --search SEARCH   Section to search for code cave inside of
+  -X                    Search all executable sections
+  -A                    Search all sections
+  -l, --length LENGTH   Number of bytes that constitutes a cave (default 64)
+  -b, --byte BYTE       Byte to be searching for.
+  -t, --target-offset TARGET
+                        Target offset to inject shellcode
+  -j INJECTION_FILE     A file of raw bytes to inject
+  -J INJECTION_STRING   A string of raw bytes to inject supplied like \xef\xeb
+  -P                    Include this flag to have caveman verify shellcode
+                        fits in the code cave, and modifies permissions of the
+                        section to allow for code execution
+  -B, --banner          Print banner
+
+
+
+TEST FOR ls (ELF FILE):
+
+DEFAULT: x
+-f: x
+-d: x
+-s: x
+-S: o
+-l: o /* THIS ONLY WORKS IF I DONT SUPPLY -f FLAG??? */
+-X: ?
+-b: o
+-t: Not attempted.

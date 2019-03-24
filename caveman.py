@@ -264,16 +264,16 @@ def main():
 
     path = results.file_path
     if path == '':
-        path = raw_input("Input absolute path to the file to look for code caves in\n> ")
-    fh = results.fh
-    ftype = getFileType(path)
-    sh = results.sh
-    se = results.search
-    sAX = results.allEx
-    sA = results.allSec
-    ccByte = results.byte
-    caveLen = results.length
-    p = results.permissions
+        path = raw_input("Input path to the file to look for code caves in\n> ")
+    fh = results.fh # File headers
+    ftype = getFileType(path) # File Type
+    sh = results.sh # Section Headers
+    se = results.search # Section to search inside of for caves
+    sAX = results.allEx # All Executable Sections
+    sA = results.allSec # All Sections
+    ccByte = results.byte # Byte to search (default 0x00 null byte)
+    caveLen = results.length # Length that constitutes a cave (default 64) 
+    p = results.permissions 
 
     if p == True:
         sA == True
@@ -281,16 +281,19 @@ def main():
     enumerating = False
     injecting = False
 
+    # Are we enumerating information?
     e = ['-d', '--file-headers', '-s', '--section-headers', '-S', '--search', '-X', '-A', '-l', '--length', '-b', '--byte']
     for flag in e:
         if flag in args:
             enumerating = True
 
+    # Are we injecting shellcode?
     i = ['-t', '--target-offset', '-j', '-J', '-o', '--output-file']
     for flag in i:
         if flag in args:
             injecting = True
 
+    # Default behaviors
     if (len(args)==1 or (len(args)==3 and path != '')):
         enumerating = True
         fh = True
