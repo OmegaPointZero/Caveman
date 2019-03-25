@@ -182,10 +182,6 @@ def crawlSection(o, s, fl, name, path, length, enumerating, ccByte):
 
 def print_caves(arr,se,sA,sAX):
 
-    # Determine which flags ( -S -A -X) are set and print accordingly!
-    # Then go back and make sure that ALL caves with the -l -b parameters are
-    # crawled, and let THIS be the gatekeeper of what prints
-
     for x in range(0,len(arr)):
         cave = arr[x]
         notification = "" + bcolors.HEADER
@@ -258,9 +254,11 @@ def main():
     if(bs and not "-l" in args):
         caveLen = len(bs)
     if(default==True):
-        sA== True
+        sA = True
 
-    #if(!ccByte):
+    if '-l' or '-b' in args:
+        sA = True
+
     if not ccByte:
         ccByte = "0x00"
 
@@ -311,7 +309,7 @@ def main():
     if (len(crawled) > 0) and (enumerating == True):
         print_caves(crawled,se,sA,sAX)
     elif (len(crawled)==0) and (enumerating == True):
-        print "Zero Caves found under supplied parameters!"
+        print "Zero Caves found under supplied parameters! (byte:%s, length:%s)" % ( ccByte, caveLen ) 
     if injecting == True:
         if binShell == None:
             print "Error: Need -j or -J flag to supply shellcode to inject"
