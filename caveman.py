@@ -150,7 +150,7 @@ def sectionsOverView(sections,btype):
             print divisor
 
 
-def crawlSection(o, s, fl, name, path, length, enumerating):
+def crawlSection(o, s, fl, name, path, length, enumerating, ccByte):
 
     f = io.open(path,'rb')
     f.seek(o) 
@@ -176,7 +176,7 @@ def crawlSection(o, s, fl, name, path, length, enumerating):
         hxb = hex(ord(rbyte))
         ende = (i==len(b)-1)
         #Byte is null
-        if hxb == "0x0":        
+        if hxb == ccByte:        
             #If we aren't counting yet, we should start, this is a new cave
             if counting == False:
                 cave_offset = i + o
@@ -199,7 +199,7 @@ def crawlSection(o, s, fl, name, path, length, enumerating):
                     cave_arr.append(myObj)  
 
         #Byte is not null
-        if hxb != "0x0":
+        if hxb != ccByte:
             #If we are counting, we've encountered the end
             if counting == True:  
                 long_enough = check_cave(cave_length,length)
@@ -270,6 +270,10 @@ def main():
     caveLen = results.length # Length that constitutes a cave (default 64);
     p = results.permissions 
 
+    #if(!ccByte):
+    if not ccByte:
+        ccByte = "0x0"
+
     if p == True:
         sA == True
 
@@ -309,17 +313,17 @@ def main():
             sectionsOverView(sections, ftype)
         for sec in sections:
             if sA:
-                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating)
+                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating, ccByte)
                 if c:
                     for e in c:
                         crawled.append(e)
             elif (int(sec['sh_flags']) & 0b100) and sAX == True:
-                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating)
+                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating, ccByte)
                 if c:
                     for e in c:
                         crawled.append(e)            
             elif se and sec['name'] == se:
-                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating)
+                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating, ccByte)
                 if c:
                     for e in c:
                         crawled.append(e)
@@ -329,17 +333,17 @@ def main():
             sectionsOverView(sections,ftype)
         for sec in sections:
             if sA:
-                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen, enumerating)
+                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen, enumerating, ccByte)
                 if c:
                     for e in c:
                         crawled.append(e)
             elif (int(sec['sh_characteristics'],16) & 0x20000000) and sAX == True:
-                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen,enumerating)
+                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen,enumerating, ccByte)
                 if c:
                     for e in c:
                         crawled.append(e)
             elif se and sec['name'] == se:
-                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen, enumerating)
+                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen, enumerating, ccByte)
                 if c:
                     for e in c:
                         crawled.append(e)

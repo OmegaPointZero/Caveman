@@ -46,5 +46,5 @@ DEFAULT: x
 -S: x
 -l: x 
 -X: x
--b: o
+-b: x
 -t: Not attempted.
