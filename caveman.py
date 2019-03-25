@@ -29,7 +29,7 @@ parser.add_argument('-b, --byte', action='store', default='0x0', dest='byte', he
 # Options for injecting shellcode
 parser.add_argument('-t, --target-offset', action='store', dest='target', help='Target offset to inject shellcode')
 parser.add_argument('-j', action='store', dest='injection_file', help='A file of raw bytes to inject')
-parser.add_argument('-J', action='store', dest='injection_string', help='A string of raw bytes to inject supplied like \\xef\\xeb')
+parser.add_argument('-J', action='store', dest='injection_string', help='A string of raw bytes to inject supplied like \\xde\\xad\\xbe\\xef')
 parser.add_argument('-P', action='store_true', dest='permissions', help='Include this flag to have caveman verify shellcode fits in the code cave, and modifies permissions of the section to allow for code execution')
 
 results = parser.parse_args()
@@ -332,10 +332,10 @@ def main():
                 start = int(cave['Starting Offset'])
                 end = start + int(cave['Length'])
                 if start <= target_offset <= (end-shelLen):
-                    print "Cave fits! Cave at offset %s is %s bytes long and the shellcode is only %s bytes.\nChecking permissions..." % (hex(start), cave['Length'], shelLen)
-                    print "Permissions: %s" % cave['Flags']
+                    print "%sCave fits!%s Cave at offset %s%s%s is %s%s%s bytes long and the shellcode is %s%s%s bytes.\nChecking permissions..." % (bcolors.OKGREEN, bcolors.HEADER, bcolors.OKBLUE, hex(start),bcolors.HEADER,bcolors.OKGREEN,cave['Length'], bcolors.HEADER, bcolors.LB, shelLen, bcolors.HEADER)
+                    print "Permissions: %s%s%s" % (bcolors.FAIL,cave['Flags'],bcolors.HEADER)
                     if 'X' in cave['Flags']:
-                        print "Target section already marked executable!"
+                        print "%sTarget section already marked executable!%s" % (bcolors.WARNING, bcolors.HEADER)
                     else:
                         print "Setting section flag to executable..."
                         setPermission(path, ftype, cave['Name'], sections)
