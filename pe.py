@@ -78,8 +78,8 @@ def parsePESectionsHeaderTable(path, offset, endian, entNum, entSize, sh):
 
     if sh:
         print bcolors.FAIL + "\nSECTION HEADER TABLE\n" + bcolors.HEADER
-        print "Should be %s%s%s entries of %s%s%s bytes." % (bcolors.WARNING,entNum, bcolors.HEADER, bcolors.WARNING, entSize, bcolors.HEADER)
-        print "Table: Looking up section header table at %s%s%s" % (bcolors.OKBLUE,str(hex(offset)) ,bcolors.HEADER)
+        print "Looking up section header table at %s%s%s" % (bcolors.OKBLUE,str(hex(offset)) ,bcolors.HEADER)
+        print "There are %s%s%s entries consisting of %s%s%s bytes in length each." % (bcolors.WARNING,entNum, bcolors.HEADER, bcolors.WARNING, entSize, bcolors.HEADER)
 
     sections = []
 

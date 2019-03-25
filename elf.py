@@ -42,8 +42,9 @@ def parseSectionHeaderTable(path, offset, arch, endian, entNum, entSize, nameInd
     
     if sh:
         print bcolors.FAIL + "\nSECTION HEADER TABLE\n" + bcolors.HEADER
-        print "Should be %s%s%s entries of %s%s%s bytes." % (bcolors.WARNING,int(entNum,16), bcolors.HEADER, bcolors.WARNING, int(entSize,16), bcolors.HEADER)
-        print "Table: Looking up section header table at %s0x%s%s" % (bcolors.OKBLUE,offset ,bcolors.HEADER)
+        print "Looking up section header table at %s0x%s%s" % (bcolors.OKBLUE,offset ,bcolors.HEADER)
+        print "There are %s%s%s entries consisting of %s%s%s bytes in length each." % (bcolors.WARNING,int(entNum,16), bcolors.HEADER, bcolors.WARNING, int(entSize,16), bcolors.HEADER)
+
 
     # nameIndex is the index of the .shstrtab
     nI = int(nameIndex,16)

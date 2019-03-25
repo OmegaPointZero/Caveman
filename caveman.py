@@ -17,13 +17,14 @@ args = sys.argv
 parser = argparse.ArgumentParser(description='Find code caves in executables, inject your own code.')
 
 # Options for if we're searching for code caves
+parser.add_argument('-f, --file', action='store', default="", dest='file_path', help='Location of file to search for code cave in (absolute path)')
 parser.add_argument('-d, --file-headers', action='store_true', dest='fh', help='Show File Headers')
 parser.add_argument('-s, --section-headers', action='store_true', dest='sh', help='Show enumerated section headers')
 parser.add_argument('-S, --search', action='store', dest='search', help='Section to search for code cave inside of')
 parser.add_argument('-X', action='store_true', dest='allEx', help='Search all executable sections')
 parser.add_argument('-A', action='store_true', dest='allSec', help='Search all sections')
 parser.add_argument('-l, --length', action='store', default='64', dest='length', help='Number of bytes that constitutes a cave (default 64)')
-parser.add_argument('-b, --byte', action='store', default='0x00', dest='byte', help='Byte to be searching for.')
+parser.add_argument('-b, --byte', action='store', default='0x0', dest='byte', help='Byte to be searching for.')
 
 # Options for injecting shellcode
 parser.add_argument('-t, --target-offset', action='store', dest='target', help='Target offset to inject shellcode')
@@ -151,7 +152,8 @@ def sectionsOverView(sections,btype):
 
 
 def crawlSection(o, s, fl, name, path, length, enumerating, ccByte):
-
+    if(ccByte=="0x00"):
+        ccByte = "0x0"
     f = io.open(path,'rb')
     f.seek(o) 
     b = f.read(s) 
@@ -259,20 +261,22 @@ def main():
     if print_banner == True:
         banner()
 
-    path = raw_input("Input path to the file to look for code caves in\n> ")
+    path = results.file_path
+    if path == '':	
+        path = raw_input("Input path to the file to look for code caves in\n> ")
     fh = results.fh # File headers
     ftype = getFileType(path) # File Type
     sh = results.sh # Section Headers
     se = results.search # Section to search inside of for caves
     sAX = results.allEx # All Executable Sections
     sA = results.allSec # All Sections
-    ccByte = results.byte # Byte to search (default 0x00 null byte);
-    caveLen = results.length # Length that constitutes a cave (default 64);
+    ccByte = results.byte # Byte to search (default 0x00 null byte)
+    caveLen = results.length # Length that constitutes a cave (default 64)
     p = results.permissions 
 
     #if(!ccByte):
     if not ccByte:
-        ccByte = "0x0"
+        ccByte = "0x00"
 
     if p == True:
         sA == True
