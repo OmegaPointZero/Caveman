@@ -32,8 +32,6 @@ parser.add_argument('-j', action='store', dest='injection_file', help='A file of
 parser.add_argument('-J', action='store', dest='injection_string', help='A string of raw bytes to inject supplied like \\xef\\xeb')
 parser.add_argument('-P', action='store_true', dest='permissions', help='Include this flag to have caveman verify shellcode fits in the code cave, and modifies permissions of the section to allow for code execution')
 
-parser.add_argument('-B, --banner', action='store_true', dest='print_banner', help='Print banner')
-
 results = parser.parse_args()
 
 
@@ -53,47 +51,6 @@ sstr = lambda string, color: bcolors.HEADER+ "|" + color + "{:<40}".format(strin
 divisor = bcolors.HEADER+ "+--------------------------------------------------------------------------------------+" +bcolors.ENDC
 
 print bcolors.HEADER + "Caveman.py -- the Code Cave Toolkit!\n\n"
-
-def banner():
-
-    print """
-                                          `. .`.+             .o-:`: ::            
-                                          +-yoo+h+++/s-. -//sh+s/:o+/+oo:/.         
-                                      `::o++.-/:++`  :ohs-`  `       `/.-/m/-       
-                                       .oo::.          `:+///+`           :m-       
-                                      :o`                  ```             s/       
-  /ssssssssso/-                      :s           .--:.         ..`        -y       
-/sso+++++++ooosso:`                 `h.            ```-:/-----:/-.-.       `s`      
-oyo++++++++++oyyyyyyo-              .s+       ``-`        `````` `-     -`-/+:+      
-ho+++++++++++omsssmooys+.        `:/-`        `-+s/h/.       `o `h:` .+:::s.:`y`     
-d+++++++++++odhmhhyo++ooyo-     +:.              ``.-+o:` -`.:d+:d++s//`  `   o/     
-d+++++++++++sdyho++++++++oss+.`s/                    ``/-::/+so:`+s `         .y     
-d+++++++++++oooo+++++++++++ooyyo            `..`      .- ````    :d`   /       y.    
-oy++++++++++++++++++++++++++oh-           `/y-+mh:`   `:o         sy` `s  .-+yhos    
-ys+++++++++++++++++++++++++h-             .s:oMMNys:`  .         `:s+.::y/oMNm`y.   
-`ys+++++++++++++++++++++++ss               `:/+++//                `/y+`...--- -s   
- `oyo+++++++++++++++++++++d.                      .o+o+              :N`       o:   
-   :hso++++++++++++++++++oN                       +h.`              -d:       .h    
-   .ddysso+++++++++++++++sN                       `ho-.`  /+/   `.`.m-        so    
-  .dy+ `:+sso++++++++++++sN                        `:+/.  .``   .+syo         d/    
-  :+      `:ssoo+++++++++sm                             ``````     `         `N.    
-             -/ssoo+++++od/                      ``.-:/+//:://++:.``        :y+     
-                .:+osooodo                       /o/:.`         .:+o     `:so.      
-                    `-:+N`                       -`                :  .+o+:`        
-                       /d                                     . ``` `+mo`           
-                      /d-                                `   `+--+s/hmsys-          
-                     +d-                            :-`://---:/hdhmyyyo+oyo:        
-                    /d.                             .:`/ooshddddysds+o+++++ss+.     
-                  .sm/``                               -+yddsyys+++oo++++++++oys:`  
-                `+yo+ssoo/.`                             -d.:/ossoo++++++++++++osso/
-              .+yo///+oo++sy/`                   :`       +y`   :+ssooo++++++++++++o
-           `/ysoy////sddd///oy+                  h-        :h.     .-+oysoo+++++++++
-      `./+ommsssh////+sss/////ss.               /o`         .h/        `-/oysoo+++++
-  -osss+:````  .h////++//+ooo+/+yo/.                          /o+oooos+-`   -ohooo++
-`oyo.           .h///hddy+sdddh////+ss:                                `:os+`  `:+syy
-    """
-
-
 
 def getFileType(target_file):
     bfile = io.open(target_file,'rb')
@@ -223,7 +180,11 @@ def crawlSection(o, s, fl, name, path, length, enumerating, ccByte):
     elif len(cave_arr) == 0:
         return 0
 
-def print_caves(arr):
+def print_caves(arr,se,sA,sAX):
+
+    # Determine which flags ( -S -A -X) are set and print accordingly!
+    # Then go back and make sure that ALL caves with the -l -b parameters are
+    # crawled, and let THIS be the gatekeeper of what prints
 
     for x in range(0,len(arr)):
         cave = arr[x]
@@ -236,7 +197,12 @@ def print_caves(arr):
         notification += sstr("Cave length: %s bytes" % cave['Length'], bcolors.WARNING ) + '\n'
         notification += sstr("Flags: %s " % cave['Flags'], bcolors.FAIL) + '\n'
         notification += "+----------------------------------------+" + '\n'
-        print notification
+        if(se != None and se==cave['Name']):
+            print notification
+        elif(sA == True):
+            print notification
+        elif(sAX == True and cave['Flags'].find('X') != -1 ):
+            print notification
 
 def setPermission(path, ftype, secName, sections):
     if ftype == "ELF":
@@ -256,14 +222,15 @@ def setPermission(path, ftype, secName, sections):
 def main():
     global args
     global results
-    print_banner = results.print_banner
 
-    if print_banner == True:
-        banner()
+    enumerating = False
+    injecting = False
+    default = False
 
     path = results.file_path
     if path == '':	
         path = raw_input("Input path to the file to look for code caves in\n> ")
+        default = True
     fh = results.fh # File headers
     ftype = getFileType(path) # File Type
     sh = results.sh # Section Headers
@@ -274,15 +241,31 @@ def main():
     caveLen = results.length # Length that constitutes a cave (default 64)
     p = results.permissions 
 
+    binShell = None
+    if results.injection_file:
+        binS = io.open(results.injection_file,'r').read()
+        binShell = binS.split('\\x')[1:]
+    elif results.injection_string:
+        ijstr = results.injection_string
+        ijstr = ijstr.lower()
+        binShell = ijstr.split('\\x')[1:]
+    bs = ''
+    if(binShell != None):
+        for i,byte in enumerate(binShell):
+            byte = int(byte,16)
+            bs += chr(byte)
+
+    if(bs and not "-l" in args):
+        caveLen = len(bs)
+    if(default==True):
+        sA== True
+
     #if(!ccByte):
     if not ccByte:
         ccByte = "0x00"
 
     if p == True:
         sA == True
-
-    enumerating = False
-    injecting = False
 
     # Are we enumerating information?
     e = ['-d', '--file-headers', '-s', '--section-headers', '-S', '--search', '-X', '-A', '-l', '--length', '-b', '--byte']
@@ -295,77 +278,41 @@ def main():
     for flag in i:
         if flag in args:
             injecting = True
-
-    d = ['-S','-X']
-    sA = True
-    for flag in d:
-        if flag in args:
-            sA = False
     if (len(args)==1):
         enumerating = True
-        fh = True # Show File
-        sh = True
+        fh = True # Show File Headers
+        sh = True # Show Section headers
     if(se):
         sA = False
     EH = parseExecHeader(ftype, path,fh)
+    global crawled 
     crawled = []
 
     if ftype == "ELF":
-#        print "Dis is an elf"
         sections = elfs(path, EH['sht'], EH['arch'], EH['endian'], EH['e_shnum'], EH['e_shentsize'], EH['e_shstrndx'], sh)
         if sh:
             sectionsOverView(sections, ftype)
         for sec in sections:
-            if sA:
-                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating, ccByte)
-                if c:
-                    for e in c:
-                        crawled.append(e)
-            elif (int(sec['sh_flags']) & 0b100) and sAX == True:
-                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating, ccByte)
-                if c:
-                    for e in c:
-                        crawled.append(e)            
-            elif se and sec['name'] == se:
-                c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating, ccByte)
-                if c:
-                    for e in c:
-                        crawled.append(e)
+            c = crawlSection(int(sec['sh_offset'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['name'], path, caveLen,enumerating, ccByte)
+            if c:
+                for e in c:
+                    crawled.append(e)
+
     elif ftype == "PE":
         sections = pes(path,EH['sht'],EH['endian'],EH['e_shnum'],EH['e_shentsize'],sh)
         if sh:
             sectionsOverView(sections,ftype)
         for sec in sections:
-            if sA:
-                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen, enumerating, ccByte)
-                if c:
-                    for e in c:
-                        crawled.append(e)
-            elif (int(sec['sh_characteristics'],16) & 0x20000000) and sAX == True:
-                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen,enumerating, ccByte)
-                if c:
-                    for e in c:
-                        crawled.append(e)
-            elif se and sec['name'] == se:
-                c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen, enumerating, ccByte)
-                if c:
-                    for e in c:
-                        crawled.append(e)
+            c = crawlSection(int(sec['sh_dataPointer'],16), int(sec['sh_size'],16), sec['parsed_flags'], sec['sh_name'], path, caveLen, enumerating, ccByte)
+            if c:
+                for e in c:
+                    crawled.append(e)
     
-    if enumerating == True:
-        print bcolors.OKBLUE + "Done crawling for caves: Found %s" % len(crawled)
     if (len(crawled) > 0) and (enumerating == True):
-        print_caves(crawled)
+        print_caves(crawled,se,sA,sAX)
+    elif (len(crawled)==0) and (enumerating == True):
+        print "Zero Caves found under supplied parameters!"
     if injecting == True:
-        binShell = None
-        if results.injection_file:
-            binS = io.open(results.injection_file,'rb')
-            binS.read()
-            binShell = bytearray.fromhex(binS)
-        elif results.injection_string:
-            ijstr = results.injection_string
-            ijstr = ijstr.lower()
-            binShell = bytearray.fromhex(ijstr)
         if binShell == None:
             print "Error: Need -j or -J flag to supply shellcode to inject"
             sys.exit(0)
@@ -378,8 +325,9 @@ def main():
             target_offset = int(tgt,16)
 
         if p == True:
-            shelLen = len(binShell)
+            shelLen = len(bs)
             print "Identifying code cave in offset %s..." % hex(target_offset)
+            
             for cave in crawled:
                 start = int(cave['Starting Offset'])
                 end = start + int(cave['Length'])
@@ -392,10 +340,10 @@ def main():
                         print "Setting section flag to executable..."
                         setPermission(path, ftype, cave['Name'], sections)
 
-        print "Writing shellcode (%s bytes) to offset 0x%s" % (len(binShell), tgt)
+        print "Writing shellcode (%s bytes) to offset 0x%s" % (len(bs), tgt)
         bd = io.open(path,'r+b')
         bd.seek(target_offset)
-        bd.write(binShell)
+        bd.write(bs)
         bd.close()
         print "Shellcode written!"
 main()

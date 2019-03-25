@@ -33,12 +33,12 @@ optional arguments:
   -P                    Include this flag to have caveman verify shellcode
                         fits in the code cave, and modifies permissions of the
                         section to allow for code execution
-  -B, --banner          Print banner
 
 
 
 TEST FOR ls (ELF FILE):
 
+Enumeration & Default behaviors
 DEFAULT: x
 -f: x
 -d: x
@@ -47,4 +47,21 @@ DEFAULT: x
 -l: x 
 -X: x
 -b: x
--t: Not attempted.
+
+Injection Behaviors
+-J: x
+-j: x
+-t: x
+-t -J: x
+-t -j: x
+
+-J -P: x
+-j -P: x
+-t -j -P: x
+-t -J -P: x
+
+
+Okay so here's something to be aware of: This was originally written to have the program crawl ALL caves of the -l and -b parameters, and store them ALL. -P was meant to access them and their data later. So I need to refactor how it works: instead of crawling conditionally, crawl automatically, and change the conditional statements to apply to *printing* that kind of information.
+
+
+
