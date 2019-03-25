@@ -32,11 +32,12 @@ To tell Caveman that you're looking to enumerate code cave information from the 
 `  -t, --target-offset TARGET
                         Target offset to inject shellcode`
                         
-`  -j INJECTION_FILE     A file of raw bytes to inject`
+`  -j INJECTION_FILE    A file of raw bytes to inject`
   
-`  -J INJECTION_STRING   A string of raw bytes to inject supplied like \xef\xeb`
+`  -J INJECTION_STRING  A string of raw bytes to inject supplied like \xef\xeb`
+
+`   -P                  Alter Permissions to mark the section you are writing to as executable`
   
   Caveman currently supports the following optional flags:
 `  
--B, --banner          Print banner
 `
