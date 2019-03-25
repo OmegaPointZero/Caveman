@@ -204,6 +204,7 @@ def setPermission(path, ftype, secName, sections):
     if ftype == "ELF":
         for section in sections:
             if section['name'] == secName:
+                print section
                 o = section['soffset']
                 cp = io.open(path,'r+b')
                 cp.seek(int(o)+8)
@@ -214,7 +215,18 @@ def setPermission(path, ftype, secName, sections):
                 cp.write(bytearray.fromhex(flg))
                 cp.close()
                 print "Flags successfully reset."
-
+    if ftype == "PE":
+        for section in sections:
+            if section['sh_name'] == secName:
+                o = section['header_offset']
+                cp = io.open(path,'r+b')
+                cp.seek(int(o+39))
+                permbit = section['sh_characteristics'][0:2]
+                pb = int(permbit,16)
+                pb += 0x20
+                cp.write(chr(pb))
+                cp.close()
+                print "Flags successfully reset."
 def main():
     global args
     global results
@@ -256,7 +268,10 @@ def main():
     if(default==True):
         sA = True
 
-    if '-l' or '-b' in args:
+    if '-l' in args:
+        sA = True
+
+    if '-b' in args:
         sA = True
 
     if not ccByte:

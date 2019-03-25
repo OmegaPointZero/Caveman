@@ -59,7 +59,9 @@ def parseSectionHeaders(path, offset, endian, entNum, entSize, sh):
         return flagStr
 
     obj = {
+        'header_offset': offset,
         'parsed_flags' : parseFlags(int(sh_characteristics,16)),
+        'raw_flags' : int(sh_characteristics,16)>>16,
         'sh_name' : sh_name,
         'sh_vsize' : sh_vsize,
         'sh_addr' : sh_vaddr,
