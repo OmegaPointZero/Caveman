@@ -15,8 +15,6 @@ pes = pe.parsePESectionsHeaderTable
 args = sys.argv
 
 parser = argparse.ArgumentParser(description='Find code caves in executables, inject your own code.')
-# File we're working with
-parser.add_argument('-f, --file', action='store', default="", dest='file_path', help='Location of file to search for code cave in (absolute path)')
 
 # Options for if we're searching for code caves
 parser.add_argument('-d, --file-headers', action='store_true', dest='fh', help='Show File Headers')
@@ -155,9 +153,9 @@ def sectionsOverView(sections,btype):
 def crawlSection(o, s, fl, name, path, length, enumerating):
 
     f = io.open(path,'rb')
-    f.seek(o)
-    b = f.read(s)
-    seclen = len(b)
+    f.seek(o) 
+    b = f.read(s) 
+    seclen = len(b) 
     
     cave_arr = []
     cave_offset = ""
@@ -218,7 +216,6 @@ def crawlSection(o, s, fl, name, path, length, enumerating):
                 cave_length = 0    
                 counting = False
 
-
     if len(cave_arr) > 0 :
         return cave_arr        
     elif len(cave_arr) == 0:
@@ -262,17 +259,15 @@ def main():
     if print_banner == True:
         banner()
 
-    path = results.file_path
-    if path == '':
-        path = raw_input("Input path to the file to look for code caves in\n> ")
+    path = raw_input("Input path to the file to look for code caves in\n> ")
     fh = results.fh # File headers
     ftype = getFileType(path) # File Type
     sh = results.sh # Section Headers
     se = results.search # Section to search inside of for caves
     sAX = results.allEx # All Executable Sections
     sA = results.allSec # All Sections
-    ccByte = results.byte # Byte to search (default 0x00 null byte)
-    caveLen = results.length # Length that constitutes a cave (default 64) 
+    ccByte = results.byte # Byte to search (default 0x00 null byte);
+    caveLen = results.length # Length that constitutes a cave (default 64);
     p = results.permissions 
 
     if p == True:
@@ -293,17 +288,22 @@ def main():
         if flag in args:
             injecting = True
 
-    # Default behaviors
-    if (len(args)==1 or (len(args)==3 and path != '')):
+    d = ['-S','-X']
+    sA = True
+    for flag in d:
+        if flag in args:
+            sA = False
+    if (len(args)==1):
         enumerating = True
-        fh = True
+        fh = True # Show File
         sh = True
-        sA = True
-
+    if(se):
+        sA = False
     EH = parseExecHeader(ftype, path,fh)
     crawled = []
 
     if ftype == "ELF":
+#        print "Dis is an elf"
         sections = elfs(path, EH['sht'], EH['arch'], EH['endian'], EH['e_shnum'], EH['e_shentsize'], EH['e_shstrndx'], sh)
         if sh:
             sectionsOverView(sections, ftype)

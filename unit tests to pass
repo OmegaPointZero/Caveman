@@ -43,8 +43,8 @@ DEFAULT: x
 -f: x
 -d: x
 -s: x
--S: o
--l: o /* THIS ONLY WORKS IF I DONT SUPPLY -f FLAG??? */
--X: ?
+-S: x
+-l: x 
+-X: x
 -b: o
 -t: Not attempted.
