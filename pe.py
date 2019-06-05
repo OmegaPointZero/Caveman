@@ -59,9 +59,7 @@ def parseSectionHeaders(path, offset, endian, entNum, entSize, sh):
         return flagStr
 
     obj = {
-        'header_offset': offset,
         'parsed_flags' : parseFlags(int(sh_characteristics,16)),
-        'raw_flags' : int(sh_characteristics,16)>>16,
         'sh_name' : sh_name,
         'sh_vsize' : sh_vsize,
         'sh_addr' : sh_vaddr,
@@ -80,8 +78,8 @@ def parsePESectionsHeaderTable(path, offset, endian, entNum, entSize, sh):
 
     if sh:
         print bcolors.FAIL + "\nSECTION HEADER TABLE\n" + bcolors.HEADER
-        print "Looking up section header table at %s%s%s" % (bcolors.OKBLUE,str(hex(offset)) ,bcolors.HEADER)
-        print "There are %s%s%s entries consisting of %s%s%s bytes in length each." % (bcolors.WARNING,entNum, bcolors.HEADER, bcolors.WARNING, entSize, bcolors.HEADER)
+        print "Should be %s%s%s entries of %s%s%s bytes." % (bcolors.WARNING,entNum, bcolors.HEADER, bcolors.WARNING, entSize, bcolors.HEADER)
+        print "Table: Looking up section header table at %s%s%s" % (bcolors.OKBLUE,str(hex(offset)) ,bcolors.HEADER)
 
     sections = []
 
