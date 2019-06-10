@@ -32,4 +32,3 @@ def bin2str(binary, endian):
         hArr = eArr[::-1] + hArr
     # Last one not happening in loop for some reason
     return "".join(hArr)
-

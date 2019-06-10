@@ -305,6 +305,7 @@ def parseELFHeader(elfFile, fh):
         print bcolors.HEADER + "\n+--------------------------------------------------------------------------------------+" + bcolors.ENDC
 
     obj = {
+        'format': 'ELF',
         'magic': magic,
         'arch': arch,
         'endian': endian,

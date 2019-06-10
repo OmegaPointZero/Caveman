@@ -32,8 +32,8 @@ parser.add_argument('-t, --target-offset', action='store', dest='target', help='
 parser.add_argument('-j', action='store', dest='injection_file', help='A file of raw bytes to inject')
 parser.add_argument('-J', action='store', dest='injection_string', help='A string of raw bytes to inject supplied like \\xef\\xeb')
 parser.add_argument('-P', action='store_true', dest='permissions', help='Include this flag to have caveman verify shellcode fits in the code cave, and modifies permissions of the section to allow for code execution')
-
-parser.add_argument('-B, --banner', action='store_true', dest='print_banner', help='Print banner')
+parser.add_argument('-E', action='store_true', dest='autoentry', help='Changes entry point of the executable to the target offset')
+parser.add_argument('-e', action='store', dest='epoints', help='Changes entry point of the executable to a custom defined offset')
 
 results = parser.parse_args()
 
@@ -54,47 +54,6 @@ sstr = lambda string, color: bcolors.HEADER+ "|" + color + "{:<40}".format(strin
 divisor = bcolors.HEADER+ "+--------------------------------------------------------------------------------------+" +bcolors.ENDC
 
 print bcolors.HEADER + "Caveman.py -- the Code Cave Toolkit!\n\n"
-
-def banner():
-
-    print """
-                                          `. .`.+             .o-:`: ::            
-                                          +-yoo+h+++/s-. -//sh+s/:o+/+oo:/.         
-                                      `::o++.-/:++`  :ohs-`  `       `/.-/m/-       
-                                       .oo::.          `:+///+`           :m-       
-                                      :o`                  ```             s/       
-  /ssssssssso/-                      :s           .--:.         ..`        -y       
-/sso+++++++ooosso:`                 `h.            ```-:/-----:/-.-.       `s`      
-oyo++++++++++oyyyyyyo-              .s+       ``-`        `````` `-     -`-/+:+      
-ho+++++++++++omsssmooys+.        `:/-`        `-+s/h/.       `o `h:` .+:::s.:`y`     
-d+++++++++++odhmhhyo++ooyo-     +:.              ``.-+o:` -`.:d+:d++s//`  `   o/     
-d+++++++++++sdyho++++++++oss+.`s/                    ``/-::/+so:`+s `         .y     
-d+++++++++++oooo+++++++++++ooyyo            `..`      .- ````    :d`   /       y.    
-oy++++++++++++++++++++++++++oh-           `/y-+mh:`   `:o         sy` `s  .-+yhos    
-ys+++++++++++++++++++++++++h-             .s:oMMNys:`  .         `:s+.::y/oMNm`y.   
-`ys+++++++++++++++++++++++ss               `:/+++//                `/y+`...--- -s   
- `oyo+++++++++++++++++++++d.                      .o+o+              :N`       o:   
-   :hso++++++++++++++++++oN                       +h.`              -d:       .h    
-   .ddysso+++++++++++++++sN                       `ho-.`  /+/   `.`.m-        so    
-  .dy+ `:+sso++++++++++++sN                        `:+/.  .``   .+syo         d/    
-  :+      `:ssoo+++++++++sm                             ``````     `         `N.    
-             -/ssoo+++++od/                      ``.-:/+//:://++:.``        :y+     
-                .:+osooodo                       /o/:.`         .:+o     `:so.      
-                    `-:+N`                       -`                :  .+o+:`        
-                       /d                                     . ``` `+mo`           
-                      /d-                                `   `+--+s/hmsys-          
-                     +d-                            :-`://---:/hdhmyyyo+oyo:        
-                    /d.                             .:`/ooshddddysds+o+++++ss+.     
-                  .sm/``                               -+yddsyys+++oo++++++++oys:`  
-                `+yo+ssoo/.`                             -d.:/ossoo++++++++++++osso/
-              .+yo///+oo++sy/`                   :`       +y`   :+ssooo++++++++++++o
-           `/ysoy////sddd///oy+                  h-        :h.     .-+oysoo+++++++++
-      `./+ommsssh////+sss/////ss.               /o`         .h/        `-/oysoo+++++
-  -osss+:````  .h////++//+ooo+/+yo/.                          /o+oooos+-`   -ohooo++
-`oyo.           .h///hddy+sdddh////+ss:                                `:os+`  `:+syy
-    """
-
-
 
 def getFileType(target_file):
     bfile = io.open(target_file,'rb')
@@ -257,10 +216,6 @@ def setPermission(path, ftype, secName, sections):
 def main():
     global args
     global results
-    print_banner = results.print_banner
-
-    if print_banner == True:
-        banner()
 
     path = results.file_path
     if path == '':
@@ -298,6 +253,47 @@ def main():
         sA = True
 
     EH = parseExecHeader(ftype, path,fh)
+
+    if (results.autoentry == True):
+        epoint = results.target
+    elif(results.epoints):
+        epoint = results.epoints
+    else:
+        epoint = None
+
+    if(epoint):
+        if(len(epoint) % 2 == 1):
+            epoint = str(0) + epoint
+        print "New entry point: 0x%s" % epoint
+        earr = []
+        while epoint:
+            earr.append(epoint[:2])
+            epoint = epoint[2:]
+        bz = io.open(path,'r+b')
+
+        if(EH['format'] == 'ELF'):
+            bz.seek(24)
+            # take offset string, format for writing to binary
+            if(EH['endian'] == 'Little'):
+                earr = earr[::-1]
+                if(EH['arch']=="64-bit"):
+                    while(len(earr)<8):
+                        earr.append("00")
+                else:
+                    while(len(earr)<4):
+                        earr.append("00")
+            elif(EH['endian'] == 'Big'):
+                if(EH['arch']=="64-bit"):
+                    while(len(earr)<8):
+                        earr.insert(0,"00")
+                else:
+                    while(len(earr)<4):
+                        earr.insert(0,"00") 
+            epoint = ''.join(earr)
+            bz.write(bytearray.fromhex(epoint))
+            bz.close()
+
+
     crawled = []
 
     if ftype == "ELF":
@@ -354,6 +350,7 @@ def main():
         elif results.injection_string:
             ijstr = results.injection_string
             ijstr = ijstr.lower()
+            ijstr = ''.join(ijstr.split('x'))
             binShell = bytearray.fromhex(ijstr)
         if binShell == None:
             print "Error: Need -j or -J flag to supply shellcode to inject"
